@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          String        @id @default(uuid())
+  name        String        @unique // slug: "food", "income", etc.
+  displayName String        // "Alimentação", "Renda", etc.
+  icon        String
+  color       String        @default("#6c757d")
+  isDefault   Boolean       @default(false) // true = não pode ser deletada
+  createdAt   DateTime      @default(now())
+  transactions Transaction[]
+
+  @@map("categories")
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  amount      Decimal  @db.Decimal(12, 2)
+  description String
+  date        DateTime
+  type        TransactionType
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("transactions")
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
